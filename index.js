@@ -1,3 +1,4 @@
+const { response } = require('express')
 const express = require('express')
 const app = express()
 
@@ -40,8 +41,8 @@ app.get('/api/entries', (req, res) => {
 })
 
 app.get('/api/entries/:id', (req, res) => {
-  const id = req.params.id
-  const entry = entries.find(entry => entry.id === parseInt(id))
+  const id = Number(req.params.id)
+  const entry = entries.find(entry => entry.id === id)
 
   if(entry) {
     res.json(entry)
@@ -49,6 +50,21 @@ app.get('/api/entries/:id', (req, res) => {
     res.status(404).end()
   }
 })
+
+app.delete('/api/entries/:id', (req, res) => {
+  const id = Number(req.params.id)
+
+  if(entries.find(entry => entry.id === id)) {
+    entries = entries.filter(entry => entry.id !== id)
+    res.status(204).end()
+  } else {
+    res.status(404).end()
+  }
+  
+
+  
+})
+
 const PORT = 3000
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)

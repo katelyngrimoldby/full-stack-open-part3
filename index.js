@@ -24,9 +24,21 @@ let entries = [
   }
 ]
 
+app.get('/info', (req, res) => {
+
+  const date = new Date()
+  res.send(
+    `<div>
+      <p>Phonebook has information for ${entries.length} people</p>
+      <p>${date.toLocaleString('en-US')}</p>
+    </div>`
+  )
+})
+
 app.get('/api/entries', (req, res) => {
   res.json(entries)
 })
+
 
 const PORT = 3000
 app.listen(PORT, () => {

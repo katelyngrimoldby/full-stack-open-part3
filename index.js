@@ -85,6 +85,12 @@ app.post('/api/entries', (req, res) => {
     })
   }
 
+  if(entries.find(entry => entry.name === body.name)) {
+    return res.status(400).json({
+      error: 'Name must be unique'
+    })
+  }
+
   const entry = {
     id: getRandomNumber(10000000),
     name: body.name,

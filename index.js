@@ -1,6 +1,7 @@
-const { response } = require('express')
 const express = require('express')
 const app = express()
+
+app.use(express.json())
 
 let entries = [
   { 
@@ -24,6 +25,16 @@ let entries = [
     "number": "39-23-6423122"
   }
 ]
+
+const getRandomNumber = (range) => {
+  const number =  Math.floor(Math.random() * range)
+
+  if(entries.find(entry => entry.id === number)) {
+    return getRandomNumber(range)
+  } else {
+    return number
+  }
+}
 
 app.get('/info', (req, res) => {
 
@@ -60,9 +71,29 @@ app.delete('/api/entries/:id', (req, res) => {
   } else {
     res.status(404).end()
   }
-  
+ 
+})
 
-  
+app.post('/api/entries', (req, res) => {
+  const body = req.body
+
+  console.log(body)
+
+  if(!body.name || !body.number) {
+    return res.status(400).json({
+      error: 'Content missing'
+    })
+  }
+
+  const entry = {
+    id: getRandomNumber(10000000),
+    name: body.name,
+    number: body.number
+  }
+
+  entries = entries.concat(entry)
+
+  res.json(entry)
 })
 
 const PORT = 3000

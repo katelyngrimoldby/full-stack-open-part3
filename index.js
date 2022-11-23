@@ -37,16 +37,30 @@ const errorHandler = (error, req, res, next) => {
 
 app.get('/info', (req, res) => {
   const date = new Date()
-  res.send(
-    `<div>
-      <p>Phonebook has information for ${entries.length} people</p>
+  Entry.find({})
+    .then(entries => {
+      const message = `<div>
+      <p>Phonebook has information for ${entries.length} person/people</p>
       <p>${date.toLocaleString('en-US')}</p>
     </div>`
-  )
+    res.send(message)
+    })
 })
 
 app.get('/api/entries', (req, res) => {
   Entry.find({}).then(entries => res.json(entries))
+})
+
+app.get('/api/entries/:id', (req, res, next) => {
+  Entry.findById(req.params.id)
+  .then(entry => {
+    if(entry) {
+      res.json(entry)
+    } else {
+      res.status(404).end()
+    }
+  })
+  .catch(error => next(error))
 })
 
 app.post('/api/entries', (req, res, next) => {
@@ -65,20 +79,6 @@ app.post('/api/entries', (req, res, next) => {
   
     entry.save().then(result => res.json(result))
   }
-})
-
-app.get('/api/entries/:id', (req, res) => {
-  Entry.findById(req.params.id)
-  .then(entry => {
-    if(entry) {
-      res.json(entry)
-    } else {
-      res.status(404).end()
-    }
-  })
-  .catch(error => next(error))
-
-  
 })
 
 app.delete('/api/entries/:id', (req, res, next) => {

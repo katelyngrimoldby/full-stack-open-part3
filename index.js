@@ -63,29 +63,26 @@ app.delete('/api/entries/:id', (req, res) => {
 app.post('/api/entries', (req, res) => {
   const body = req.body
 
-  console.log(body)
-
   if(!body.name || !body.number) {
     return res.status(400).json({
       error: 'Content missing'
     })
   }
 
-  if(entries.find(entry => entry.name === body.name)) {
-    return res.status(400).json({
-      error: 'Name must be unique'
-    })
-  }
+  // if(entries.find(entry => entry.name === body.name)) {
+  //   return res.status(400).json({
+  //     error: 'Name must be unique'
+  //   })
+  // }
 
-  const entry = {
-    id: getRandomNumber(10000000),
+  const entry = new Entry({
     name: body.name,
-    number: body.number
-  }
+    number: body.number,
+  })
 
-  entries = entries.concat(entry)
+  entry.save().then(result => res.json(result))
+  
 
-  res.json(entry)
 })
 
 const PORT = process.env.PORT

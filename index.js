@@ -25,11 +25,10 @@ const unknownEndpoint = (req, res) => {
 
 const errorHandler = (error, req, res, next) => {
   if(error.name === 'CastError') {
-    return res.status(400).send({error: 'malformatted id'})
+    return res.status(400).json({error: 'malformatted id'})
   }
-
-  if(error.name === 'BodyError') {
-    return res.status(400).send({error: 'Content missing'})
+  if(error.name === 'ValidationError') {
+    return res.status(400).json({error: error.message})
   }
 
   next(error)
@@ -66,19 +65,14 @@ app.get('/api/entries/:id', (req, res, next) => {
 app.post('/api/entries', (req, res, next) => {
   const body = req.body
 
-  if(!body.name || !body.number) {
-    const error = {
-      name: 'BodyError'
-    }
-    next(error)
-  } else {
-    const entry = new Entry({
-      name: body.name,
-      number: body.number,
-    })
-  
-    entry.save().then(result => res.json(result))
-  }
+  const entry = new Entry({
+    name: body.name,
+    number: body.number,
+  })
+
+  entry.save()
+    .then(result => res.json(result))
+    .catch(error => next(error))
 })
 
 app.delete('/api/entries/:id', (req, res, next) => {

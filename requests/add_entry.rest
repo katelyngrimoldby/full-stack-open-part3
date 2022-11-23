@@ -2,6 +2,6 @@ POST http://localhost:8080/api/entries
 content-type: application/json
 
 {
-  "name": "",
-  "number": "23456789"
+  "name": "h",
+  "number": ""
 }

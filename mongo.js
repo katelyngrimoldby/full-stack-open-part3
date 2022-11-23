@@ -25,8 +25,6 @@ if(process.argv.length === 3) {
   mongoose
     .connect(url)
     .then(() => {
-      console.log('connected')
-
       Entry
         .find({})
         .then(result => {
@@ -41,8 +39,6 @@ if(process.argv.length === 3) {
   mongoose
   .connect(url)
   .then(() => {
-    console.log('connected')
-
     const entry = new Entry({
       name: process.argv[3],
       number: process.argv[4],

@@ -68,14 +68,17 @@ app.post('/api/entries', (req, res, next) => {
 })
 
 app.get('/api/entries/:id', (req, res) => {
-  const id = Number(req.params.id)
-  const entry = entries.find(entry => entry.id === id)
+  Entry.findById(req.params.id)
+  .then(entry => {
+    if(entry) {
+      res.json(entry)
+    } else {
+      res.status(404).end()
+    }
+  })
+  .catch(error => next(error))
 
-  if(entry) {
-    res.json(entry)
-  } else {
-    res.status(404).end()
-  }
+  
 })
 
 app.delete('/api/entries/:id', (req, res, next) => {
@@ -88,6 +91,28 @@ app.delete('/api/entries/:id', (req, res, next) => {
     }
   })
   .catch(error => next(error))
+})
+
+app.put('/api/entries/:id', (req, res, next) => {
+  const body = req.body
+
+  if(!body.name || !body.number) {
+    const error = {
+      name: 'BodyError'
+    }
+    next(error)
+  } else {
+    console.log('test')
+    const entry = {
+      name: body.name,
+      number: body.number
+    }
+
+    Entry.findByIdAndUpdate(req.params.id, entry, {new: true})
+    .then(entry => res.json(entry))
+    .catch(error => next(error))
+  }
+  
 })
 
 app.use(unknownEndpoint)

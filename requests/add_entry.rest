@@ -1,7 +1,7 @@
-POST http://localhost:3000/api/entries
+POST http://localhost:8080/api/entries
 content-type: application/json
 
 {
-  "name": "sample",
+  "name": "",
   "number": "23456789"
 }

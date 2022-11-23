@@ -1,1 +1,1 @@
-DELETE http://localhost:3000/api/entries/1
+DELETE http://localhost:8080/api/entries/637d846c238396d86503df78

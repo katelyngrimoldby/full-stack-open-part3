@@ -1,15 +1,12 @@
 require('dotenv').config()
 const express = require('express')
-const morgan = require('morgan')
 const cors = require('cors')
 const Entry = require('./models/entry')
+const { response } = require('express')
 const app = express()
-
-morgan.token('body', function (req, res) { return JSON.stringify(req.body)})
 
 app.use(express.json())
 app.use(express.static('dist'))
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms :body'))
 app.use(cors())
 
 const getRandomNumber = (range) => {
@@ -22,8 +19,23 @@ const getRandomNumber = (range) => {
   }
 }
 
-app.get('/info', (req, res) => {
+const unknownEndpoint = (req, res) => {
+  res.status(404).send({error: 'unknown endpoint'})
+}
 
+const errorHandler = (error, req, res, next) => {
+  if(error.name === 'CastError') {
+    return res.status(400).send({error: 'malformatted id'})
+  }
+
+  if(error.name === 'BodyError') {
+    return res.status(400).send({error: 'Content missing'})
+  }
+
+  next(error)
+}
+
+app.get('/info', (req, res) => {
   const date = new Date()
   res.send(
     `<div>
@@ -37,6 +49,24 @@ app.get('/api/entries', (req, res) => {
   Entry.find({}).then(entries => res.json(entries))
 })
 
+app.post('/api/entries', (req, res, next) => {
+  const body = req.body
+
+  if(!body.name || !body.number) {
+    const error = {
+      name: 'BodyError'
+    }
+    next(error)
+  } else {
+    const entry = new Entry({
+      name: body.name,
+      number: body.number,
+    })
+  
+    entry.save().then(result => res.json(result))
+  }
+})
+
 app.get('/api/entries/:id', (req, res) => {
   const id = Number(req.params.id)
   const entry = entries.find(entry => entry.id === id)
@@ -48,42 +78,20 @@ app.get('/api/entries/:id', (req, res) => {
   }
 })
 
-app.delete('/api/entries/:id', (req, res) => {
-  const id = Number(req.params.id)
-
-  if(entries.find(entry => entry.id === id)) {
-    entries = entries.filter(entry => entry.id !== id)
-    res.status(204).end()
-  } else {
-    res.status(404).end()
-  }
- 
-})
-
-app.post('/api/entries', (req, res) => {
-  const body = req.body
-
-  if(!body.name || !body.number) {
-    return res.status(400).json({
-      error: 'Content missing'
-    })
-  }
-
-  // if(entries.find(entry => entry.name === body.name)) {
-  //   return res.status(400).json({
-  //     error: 'Name must be unique'
-  //   })
-  // }
-
-  const entry = new Entry({
-    name: body.name,
-    number: body.number,
+app.delete('/api/entries/:id', (req, res, next) => {
+  Entry.findByIdAndRemove(req.params.id)
+  .then(result => {
+    if(result) {
+      res.status(204).end()
+    } else {
+      res.status(404).end()
+    }
   })
-
-  entry.save().then(result => res.json(result))
-  
-
+  .catch(error => next(error))
 })
+
+app.use(unknownEndpoint)
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {

@@ -74,12 +74,14 @@ app.post('/api/entries', (req, res, next) => {
     .then(entries => {
       if(entries.length > 0) {
         return res.status(400).json({error: `${body.name} is already in the phonebook`})
+      } else {
+        entry.save()
+        .then(result => res.json(result))
+        .catch(error => next(error))
       }
     })
 
-  entry.save()
-    .then(result => res.json(result))
-    .catch(error => next(error))
+  
 })
 
 app.delete('/api/entries/:id', (req, res, next) => {

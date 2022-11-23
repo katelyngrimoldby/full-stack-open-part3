@@ -16,13 +16,19 @@ mongoose.connect(url)
   const entrySchema = new mongoose.Schema({
     name: {
       type: String,
-      minLength: 3,
-      required: true
+      minLength: [3, 'Name must be at least three characters long'],
+      required: [true, 'Name is required']
     },
     number: {
       type: String,
-      required: true
-    },
+      required: [true, 'Number is required'],
+      validate: {
+        validator: function(v) {
+          return /\d{2,3}-\d{6,}/.test(v)
+        },
+        message: props => `${props.value} is not a valid phone number`
+      }
+    }
   })
 
   entrySchema.set('toJSON', {

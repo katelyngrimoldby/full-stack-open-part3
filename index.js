@@ -70,6 +70,13 @@ app.post('/api/entries', (req, res, next) => {
     number: body.number,
   })
 
+  Entry.find({name: body.name})
+    .then(entries => {
+      if(entries.length > 0) {
+        return res.status(400).json({error: `${body.name} is already in the phonebook`})
+      }
+    })
+
   entry.save()
     .then(result => res.json(result))
     .catch(error => next(error))
@@ -90,23 +97,14 @@ app.delete('/api/entries/:id', (req, res, next) => {
 app.put('/api/entries/:id', (req, res, next) => {
   const body = req.body
 
-  if(!body.name || !body.number) {
-    const error = {
-      name: 'BodyError'
-    }
-    next(error)
-  } else {
-    console.log('test')
-    const entry = {
-      name: body.name,
-      number: body.number
-    }
-
-    Entry.findByIdAndUpdate(req.params.id, entry, {new: true})
-    .then(entry => res.json(entry))
-    .catch(error => next(error))
+  const entry = {
+    name: body.name,
+    number: body.number
   }
-  
+
+  Entry.findByIdAndUpdate(req.params.id, entry, {new: true, runValidators: true, context: 'query'})
+  .then(entry => res.json(entry))
+  .catch(error => next(error))
 })
 
 app.use(unknownEndpoint)

@@ -52,6 +52,19 @@ test('Likes set to 0 if undefined in request body', async () => {
   expect(response.body).toEqual(expect.objectContaining({ likes: 0 }));
 });
 
+test('Error thrown if title, author, and/or url are undefined in request body', async () => {
+  const blog = { likes: 1 };
+
+  await api
+    .post('/api/blogs')
+    .send(blog)
+    .expect(400);
+
+  const response = await helper.blogsInDB();
+
+  expect(response).toHaveLength(helper.initialBlogs.length);
+});
+
 afterAll(() => {
   mongoose.connection.close();
 });

@@ -9,60 +9,88 @@ const api= supertest(app);
 beforeEach(async () => {
   await Blog.deleteMany({});
 
-  for(let blog of helper.initialBlogs) {
-    let blogObject = new Blog(blog);
-    await blogObject.save();
-  }
+  await Blog.insertMany(helper.initialBlogs);
 });
 
-test('all blogs are returned in JSON', async () => {
-  await api
-    .get('/api/blogs')
-    .expect(200)
-    .expect('Content-Type', /application\/json/);
+describe('Viewing all blogs', () => {
+  test('all blogs are returned in JSON', async () => {
+    await api
+      .get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /application\/json/);
 
-  const response = await api.get('/api/blogs');
+    const response = await api.get('/api/blogs');
 
-  expect(response.body).toHaveLength(helper.initialBlogs.length);
+    expect(response.body).toHaveLength(helper.initialBlogs.length);
+  });
+
+  test('id property is "id"', async () => {
+    const response = await api.get('/api/blogs');
+
+    expect(response.body[0].id).toBeDefined();
+  });
 });
 
-test('id property is "id"', async () => {
-  const response = await api.get('/api/blogs');
+describe('adding a blog', () => {
+  test('POST request adds blog', async () => {
+    const blog = { title: 'test', author: 'John Doe', url: 'dummy.com/lorem', likes: 3 };
 
-  expect(response.body[0].id).toBeDefined();
+    const response = await api.post('/api/blogs').send(blog);
+
+    expect(response.body).toEqual(expect.objectContaining(blog));
+
+    const blogs = await helper.blogsInDB();
+
+    expect(blogs).toHaveLength(helper.initialBlogs.length + 1);
+  });
+
+  test('Likes set to 0 if undefined in request body', async () => {
+    const blog = { title: 'test', author: 'John Doe', url: 'dummy.com/lorem' };
+
+    const response = await api.post('/api/blogs').send(blog);
+
+    expect(response.body).toEqual(expect.objectContaining({ likes: 0 }));
+  });
+
+  test('Error thrown if title, author, and/or url are undefined in request body', async () => {
+    const blog = { likes: 1 };
+
+    await api
+      .post('/api/blogs')
+      .send(blog)
+      .expect(400);
+
+    const response = await helper.blogsInDB();
+
+    expect(response).toHaveLength(helper.initialBlogs.length);
+  });
 });
 
-test('POST req adds blog', async () => {
-  const blog = { title: 'test', author: 'John Doe', url: 'dummy.com/lorem', likes: 3 };
+describe('Deleting a blog', () => {
+  test('Blog is removed and deletiong returns 204', async () => {
+    const initialBlogs = await helper.blogsInDB();
 
-  const response = await api.post('/api/blogs').send(blog);
+    await api
+      .delete(`/api/blogs/${initialBlogs[0].id}`)
+      .expect(204);
 
-  expect(response.body).toEqual(expect.objectContaining(blog));
+    const newBlogs = await helper.blogsInDB();
+    expect(newBlogs).toHaveLength(helper.initialBlogs.length - 1);
+  });
 
-  const blogs = await helper.blogsInDB();
+  test('Returns 404 if blog already deleted', async () => {
+    const removedBlogId = await helper.nonExistantBlog();
 
-  expect(blogs).toHaveLength(helper.initialBlogs.length + 1);
-});
+    await api
+      .delete(`/api/blogs/${removedBlogId}`)
+      .expect(404);
+  });
 
-test('Likes set to 0 if undefined in request body', async () => {
-  const blog = { title: 'test', author: 'John Doe', url: 'dummy.com/lorem' };
-
-  const response = await api.post('/api/blogs').send(blog);
-
-  expect(response.body).toEqual(expect.objectContaining({ likes: 0 }));
-});
-
-test('Error thrown if title, author, and/or url are undefined in request body', async () => {
-  const blog = { likes: 1 };
-
-  await api
-    .post('/api/blogs')
-    .send(blog)
-    .expect(400);
-
-  const response = await helper.blogsInDB();
-
-  expect(response).toHaveLength(helper.initialBlogs.length);
+  test('Returns 400 if invalid id given', async () => {
+    await api
+      .delete('/api/blogs/kjhgfdsa')
+      .expect(400);
+  });
 });
 
 afterAll(() => {

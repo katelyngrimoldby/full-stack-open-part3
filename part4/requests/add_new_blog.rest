@@ -1,0 +1,8 @@
+POST http://localhost:8080/api/blogs
+content-type: application/json
+
+{
+  "title": "Brand New Blog",
+  "author": "Arto Hellas",
+  "url": "https://sample-site.com"
+}

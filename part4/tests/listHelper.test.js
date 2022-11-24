@@ -117,3 +117,40 @@ describe('favourite blog', () => {
     });
   });
 });
+
+describe('Most blogs', () => {
+  test('return null for no blogs', () => {
+    const blogs = [];
+
+    const result = listHelper.mostBlogs(blogs);
+    expect(result).toBe(null);
+  });
+
+  test('Return author and 1 if one blog in list', () => {
+    const blog = [
+      {
+        _id: '5a422a851b54a676234d17f7',
+        title: 'React patterns',
+        author: 'Michael Chan',
+        url: 'https://reactpatterns.com/',
+        likes: 7,
+        __v: 0
+      },
+    ];
+
+    const result = listHelper.mostBlogs(blog);
+    expect(result).toEqual({
+      author: 'Michael Chan',
+      blogs: 1
+    });
+  });
+
+  test('return top author and total count of blogs', () => {
+    const result = listHelper.mostBlogs(blogs);
+
+    expect(result).toEqual({
+      author: 'Robert C. Martin',
+      blogs: 3
+    });
+  });
+});

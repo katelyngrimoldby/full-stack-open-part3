@@ -26,10 +26,6 @@ test('all blogs are returned in JSON', async () => {
   expect(response.body).toHaveLength(helper.initialBlogs.length);
 });
 
-afterAll(() => {
-  mongoose.connection.close();
-});
-
 test('id property is "id"', async () => {
   const response = await api.get('/api/blogs');
 
@@ -46,4 +42,16 @@ test('POST req adds blog', async () => {
   const blogs = await helper.blogsInDB();
 
   expect(blogs).toHaveLength(helper.initialBlogs.length + 1);
+});
+
+test('Likes set to 0 if undefined in request body', async () => {
+  const blog = { title: 'test', author: 'John Doe', url: 'dummy.com/lorem' };
+
+  const response = await api.post('/api/blogs').send(blog);
+
+  expect(response.body).toEqual(expect.objectContaining({ likes: 0 }));
+});
+
+afterAll(() => {
+  mongoose.connection.close();
 });

@@ -35,3 +35,15 @@ test('id property is "id"', async () => {
 
   expect(response.body[0].id).toBeDefined();
 });
+
+test('POST req adds blog', async () => {
+  const blog = { title: 'test', author: 'John Doe', url: 'dummy.com/lorem', likes: 3 };
+
+  const response = await api.post('/api/blogs').send(blog);
+
+  expect(response.body).toEqual(expect.objectContaining(blog));
+
+  const blogs = await helper.blogsInDB();
+
+  expect(blogs).toHaveLength(helper.initialBlogs.length + 1);
+});

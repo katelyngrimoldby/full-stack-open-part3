@@ -93,6 +93,52 @@ describe('Deleting a blog', () => {
   });
 });
 
+describe('Updating a blog', () => {
+  test('Updates blog with all new fields', async () => {
+    const initialBlogs = await helper.blogsInDB();
+
+    const oldFields = {
+      title: initialBlogs[0].title,
+      author: initialBlogs[0].author,
+      url: initialBlogs[0].url,
+      likes: initialBlogs[0].likes,
+    };
+
+    const newFields = {
+      title: 'New Title',
+      author: 'New Author',
+      url: 'newsite.com',
+      likes: 9
+    };
+
+    await api.put(`/api/blogs/${initialBlogs[0].id}`).send(newFields);
+
+    const response = await helper.blogsInDB();
+
+    expect(response[0]).not.toEqual(expect.objectContaining(oldFields));
+  });
+
+  test('preserves old fields if not replaced', async () => {
+    const initialBlogs = await helper.blogsInDB();
+
+    const oldFields = {
+      title: initialBlogs[0].title,
+      author: initialBlogs[0].author,
+      url: initialBlogs[0].url,
+    };
+
+    const newFields = {
+      likes: 9
+    };
+
+    await api.put(`/api/blogs/${initialBlogs[0].id}`).send(newFields);
+
+    const response = await helper.blogsInDB();
+
+    expect(response[0]).toEqual(expect.objectContaining({ ...oldFields, ...newFields }));
+  });
+});
+
 afterAll(() => {
   mongoose.connection.close();
 });

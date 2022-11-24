@@ -23,11 +23,15 @@ test('all blogs are returned in JSON', async () => {
 
   const response = await api.get('/api/blogs');
 
-  console.log(response);
-
   expect(response.body).toHaveLength(helper.initialBlogs.length);
 });
 
 afterAll(() => {
   mongoose.connection.close();
+});
+
+test('id property is "id"', async () => {
+  const response = await api.get('/api/blogs');
+
+  expect(response.body[0].id).toBeDefined();
 });

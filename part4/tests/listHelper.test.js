@@ -154,3 +154,39 @@ describe('Most blogs', () => {
     });
   });
 });
+
+describe('Most likes', () => {
+  test('return null for no blogs', () => {
+    const blogs = [];
+
+    const result = listHelper.mostLikes(blogs);
+    expect(result).toBe(null);
+  });
+
+  test('Return author and 1 if one blog in list', () => {
+    const blog = [
+      {
+        _id: '5a422a851b54a676234d17f7',
+        title: 'React patterns',
+        author: 'Michael Chan',
+        url: 'https://reactpatterns.com/',
+        likes: 7,
+        __v: 0
+      },
+    ];
+
+    const result = listHelper.mostLikes(blog);
+    expect(result).toEqual({
+      author: 'Michael Chan',
+      likes: 7
+    });
+  });
+
+  test('return top author and author\'s total likes', () => {
+    const result = listHelper.mostLikes(blogs);
+    expect(result).toEqual({
+      author: 'Edsger W. Dijkstra',
+      likes: 17
+    });
+  });
+});

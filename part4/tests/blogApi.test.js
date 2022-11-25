@@ -2,14 +2,17 @@ const mongoose = require('mongoose');
 const supertest = require('supertest');
 const app = require('../app');
 const Blog = require('../models/blog');
+const User = require('../models/user');
 const helper = require('./testHelper');
 
 const api= supertest(app);
 
 beforeEach(async () => {
   await Blog.deleteMany({});
+  await User.deleteMany({});
 
   await Blog.insertMany(helper.initialBlogs);
+  await User.insertMany(helper.initialUsers);
 });
 
 describe('Viewing all blogs', () => {
@@ -64,6 +67,7 @@ describe('adding a blog', () => {
 
     expect(response).toHaveLength(helper.initialBlogs.length);
   });
+
 });
 
 describe('Deleting a blog', () => {

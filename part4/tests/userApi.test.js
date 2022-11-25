@@ -25,13 +25,46 @@ describe('creating users to db', () => {
     expect(response.body).toEqual(expect.objectContaining({ username: 'katelyngrimoldby', name: 'Katelyn Grimoldby' }));
 
     const users = await helper.usersInDB();
-
     expect(users).toHaveLength(helper.initialUsers.length + 1);
   }, 60000);
 
-  test('test', () => {
-    expect(1).toEqual(1);
-  });
+  test('Error returned if password omitted', async () => {
+    const reqBody = {
+      username: 'katelyngrimoldby',
+      name: 'Katelyn Grimoldby'
+    };
+
+    await api.post('/api/users').send(reqBody).expect(400);
+
+    const users = await helper.usersInDB();
+    expect(users).toHaveLength(helper.initialUsers.length);
+  }, 60000);
+
+  test('Error returned if password too short', async () => {
+    const reqBody = {
+      username: 'katelyngrimoldby',
+      name: 'Katelyn Grimoldby',
+      password: 'a',
+    };
+
+    await api.post('/api/users').send(reqBody).expect(400);
+
+    const users = await helper.usersInDB();
+    expect(users).toHaveLength(helper.initialUsers.length);
+  }, 60000);
+
+  test('Error returned if username not unique', async () => {
+    const reqBody = {
+      username: 'mluukkai',
+      name: 'Katelyn Grimoldby',
+      password: 'a',
+    };
+
+    await api.post('/api/users').send(reqBody).expect(400);
+
+    const users = await helper.usersInDB();
+    expect(users).toHaveLength(helper.initialUsers.length);
+  }, 60000);
 });
 
 afterAll(() => {

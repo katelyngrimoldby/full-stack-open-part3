@@ -12,18 +12,21 @@ blogsRouter.post('/', async (req, res, next) => {
   const body = req.body;
   try {
     const user = req.user;
+    if(user) {
+      const blog = new Blog({
+        ...body,
+        user: user._id
+      });
+      blog.likes = body.likes || 0;
 
-    const blog = new Blog({
-      ...body,
-      user: user._id
-    });
-    blog.likes = body.likes || 0;
+      const result = await blog.save();
+      user.blogs = user.blogs.concat(result._id);
+      await user.save();
 
-    const result = await blog.save();
-    user.blogs = user.blogs.concat(result._id);
-    await user.save();
-
-    res.status(201).json(result);
+      res.status(201).json(result);
+    } else {
+      res.status(401).json({ error: 'Unauthorized' });
+    }
   } catch (error) {
     next(error);
   }
@@ -34,9 +37,13 @@ blogsRouter.delete('/:id', async (req, res, next) => {
     const blog = await Blog.findById(req.params.id);
     if(blog) {
       const user = req.user;
-      if(blog.user.toString() === user._id.toString()) {
-        await blog.remove();
-        res.status(204).end();
+      if(user) {
+        if(blog.user.toString() === user._id.toString()) {
+          await blog.remove();
+          res.status(204).end();
+        } else {
+          return res.status(401).json({ error: 'Invalid authorization' });
+        }
       } else {
         return res.status(401).json({ error: 'Invalid authorization' });
       }

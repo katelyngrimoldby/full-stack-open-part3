@@ -1,5 +1,6 @@
 POST http://localhost:8080/api/blogs
 content-type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImthdGVseW5ncmltb2xkYnkiLCJpZCI6IjYzODBmYjZjOTgwOGM1NWVhNmZlNTY2MyIsImlhdCI6MTY2OTQwMDc4M30.B3fFtjvZrJvFkqQMA7VTzXnk1GxN
 
 {
   "title": "Brand New Blog",

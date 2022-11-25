@@ -24,7 +24,6 @@ blogsRouter.post('/', async (req, res, next) => {
       ...body,
       user: user._id
     });
-    console.log(req.newTitle);
     blog.likes = body.likes || 0;
 
     const result = await blog.save();
@@ -39,9 +38,20 @@ blogsRouter.post('/', async (req, res, next) => {
 
 blogsRouter.delete('/:id', async (req, res, next) => {
   try {
-    const result = await Blog.findByIdAndRemove(req.params.id);
-    if(result) {
-      res.status(204).end();
+    const blog = await Blog.findById(req.params.id);
+    if(blog) {
+      const decodedToken = jwt.verify(req.token, config.SECRET);
+      if(!decodedToken.id) {
+        return res.status(401).json({ error: 'token missing or invalid' });
+      }
+
+      const user = await User.findById(decodedToken.id);
+      if(blog.user.toString() === user._id.toString()) {
+        await blog.remove();
+        res.status(204).end();
+      } else {
+        return res.status(401).json({ error: 'Invalid authorization' });
+      }
     } else {
       res.status(404).end();
     }

@@ -19,7 +19,8 @@ blogsRouter.post('/', async (req, res, next) => {
       });
       blog.likes = body.likes || 0;
 
-      const result = await blog.save();
+      const populatedBlog = await blog.populate('user', { name: 1, username: 1 });
+      const result = await populatedBlog.save();
       user.blogs = user.blogs.concat(result._id);
       await user.save();
 

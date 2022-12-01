@@ -59,14 +59,51 @@ blogsRouter.delete('/:id', async (req, res, next) => {
 blogsRouter.put('/:id', async (req, res, next) => {
   const body = req.body;
   try {
-    const blog = await Blog.findById(req.params.id);
+    const blog = {
+      title: body.title,
+      author: body.author,
+      url: body.url,
+      likes: body.likes,
+      user: body.user.id,
+      comments: body.comments
+    };
 
-    const newBlog = { ...blog['_.doc'], ...body };
-
-    const result = await Blog.findByIdAndUpdate(req.params.id, newBlog, { new: true });
+    const result = await Blog
+      .findByIdAndUpdate(req.params.id, blog, {
+        new: true,
+        runValidators: true,
+        context: 'query'
+      })
+      .populate('user', { name: 1, username: 1 });
 
     res.json(result);
   } catch (error) {
+    next(error);
+  }
+});
+
+blogsRouter.put('/:id', async (req, res, next) => {
+  const body = req.body;
+  try {
+    const blog = {
+      title: body.title,
+      author: body.author,
+      url: body.url,
+      likes: body.likes,
+      user: body.user._id,
+      comments: body.comments
+    };
+
+    const result = await Blog
+      .findByIdAndUpdate(req.params.id, blog, {
+        new: true,
+        runValidators: true,
+        context: 'query'
+      })
+      .populate('user', { name: 1, username: 1 });
+
+    res.json(result);
+  } catch(error) {
     next(error);
   }
 });
